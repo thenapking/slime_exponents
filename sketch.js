@@ -1,21 +1,18 @@
 // Global Settings
 let SLIME_THICKNESS = 1;
 let SLIME_DECAY = 0.95;
-let SLIME_THRESHOLDS = [1,2,4,8, 16, 32, 64];
 let SLIME_DEPOSIT = 40
 
-let msWorker = new Worker('worker.js'); // For marching squares contour extraction
-let interactionWorker = new Worker('interactionWorker.js'); // For inter-agent interactions
+let msWorker = new Worker('worker.js'); 
+let interactionWorker = new Worker('interactionWorker.js'); 
 
-// Define an interaction matrix between groups (values between -1 and +1)
-// Rows/columns correspond to group IDs 0, 1, and 2.
 const interactionMatrix = [
-  [ 0.07,  0.99,  0.99 ], // Group 0 interactions with groups 0, 1, 2
-  [ 0.27,  0.16, -0.99 ], // Group 1 interactions with groups 0, 1, 2
-  [ 0.2, -0.99,  0.02   ]  // Group 2 interactions with groups 0, 1, 2
+  [ 0.07,  0.99,  0.99 ], 
+  [ 0.27,  0.16, -0.99 ], 
+  [ 0.2, -0.99,  0.02   ]  
 ];
 
-let contourResults = {}; // Stores contours as contourResults[groupID][threshold] = segments
+let contourResults = {}; 
 
 msWorker.onmessage = function(e) {
   const { segments, threshold, groupID } = e.data;
@@ -35,12 +32,6 @@ let nextAgentID = 0;
 
 let gui;
 
-function angleDifference(target, current) {
-  let diff = target - current;
-  while (diff < -PI) diff += TWO_PI;
-  while (diff > PI) diff -= TWO_PI;
-  return diff;
-}
 
 function setup() {
   createCanvas(800, 800);
@@ -223,6 +214,13 @@ class Agent {
       this.angle += 0.1 * averageForce;
     }
   }
+}
+
+function angleDifference(target, current) {
+  let diff = target - current;
+  while (diff < -PI) diff += TWO_PI;
+  while (diff > PI) diff -= TWO_PI;
+  return diff;
 }
 
 // --- Agent and Group Updates ---
