@@ -3,7 +3,7 @@ function getIntersection(x1, y1, v1, x2, y2, v2, threshold) {
   return { x: x1 + (x2 - x1) * t, y: y1 + (y2 - y1) * t };
 }
 
-function marchingSquares(grid, cols, rows, gridRes, threshold) {
+function marchingSquares(grid, cols, rows, resolution, threshold) {
   let segments = [];
   for (let i = 0; i < cols - 1; i++) {
     for (let j = 0; j < rows - 1; j++) {
@@ -18,21 +18,21 @@ function marchingSquares(grid, cols, rows, gridRes, threshold) {
       let bl = vBL > threshold ? 1 : 0;
       let state = tl * 8 + tr * 4 + br * 2 + bl;
 
-      let x = i * gridRes;
-      let y = j * gridRes;
+      let x = i * resolution;
+      let y = j * resolution;
       
       let top = null, right = null, bottom = null, left = null;
       if ((vTL - threshold) * (vTR - threshold) < 0) {
-        top = getIntersection(x, y, vTL, x + gridRes, y, vTR, threshold);
+        top = getIntersection(x, y, vTL, x + resolution, y, vTR, threshold);
       }
       if ((vTR - threshold) * (vBR - threshold) < 0) {
-        right = getIntersection(x + gridRes, y, vTR, x + gridRes, y + gridRes, vBR, threshold);
+        right = getIntersection(x + resolution, y, vTR, x + resolution, y + resolution, vBR, threshold);
       }
       if ((vBL - threshold) * (vBR - threshold) < 0) {
-        bottom = getIntersection(x, y + gridRes, vBL, x + gridRes, y + gridRes, vBR, threshold);
+        bottom = getIntersection(x, y + resolution, vBL, x + resolution, y + resolution, vBR, threshold);
       }
       if ((vTL - threshold) * (vBL - threshold) < 0) {
-        left = getIntersection(x, y, vTL, x, y + gridRes, vBL, threshold);
+        left = getIntersection(x, y, vTL, x, y + resolution, vBL, threshold);
       }
 
       switch (state) {
@@ -78,7 +78,7 @@ function marchingSquares(grid, cols, rows, gridRes, threshold) {
 }
 
 onmessage = function(e) {
-  const { grid, cols, rows, gridRes, threshold, groupID } = e.data;
-  const segments = marchingSquares(grid, cols, rows, gridRes, threshold);
+  const { grid, cols, rows, resolution, threshold, groupID } = e.data;
+  const segments = marchingSquares(grid, cols, rows, resolution, threshold);
   postMessage({ segments, threshold, groupID });
 };
