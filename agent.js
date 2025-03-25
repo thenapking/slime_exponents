@@ -60,7 +60,7 @@ function update_agents() {
 }
 
 function diffuseTrails() {
-  groups.forEach(group => {
+  for(let group of groups){
     let newMap = new Array(cols).fill().map(() => new Array(rows).fill(0));
     for (let i = 0; i < cols; i++) {
       for (let j = 0; j < rows; j++) {
@@ -81,5 +81,5 @@ function diffuseTrails() {
       }
     }
     group.trailMap = newMap;
-  });
+  };
 }
