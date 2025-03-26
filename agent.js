@@ -55,10 +55,19 @@ class Agent {
   }
 
   draw(){
+    if(!this.in_thresholds()) { return }
     stroke(palette.black);
     strokeWeight(1);
     fill(this.group.fillColor);
     circle(this.pos.x, this.pos.y, 6);
+  }
+
+  in_thresholds(){
+    let i = floor(this.pos.x / resolution);
+    let j = floor(this.pos.y / resolution);
+    if(i < 0 || i >= cols || j < 0 || j >= rows) { return false }
+    let val = this.group.trailMap[i][j];
+    return val > this.group.maxThreshold;
   }
   
 }

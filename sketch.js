@@ -1,6 +1,6 @@
 // Global Settings
-const N = 3;
-const A = 50000;
+const N = 1;
+const A = 25000;
 
 const SLIME_THICKNESS = 1;
 const SLIME_DECAY = 0.95;
@@ -51,12 +51,12 @@ let agents = [];
 let attractors = [];
 let food_map = [];
 
-let resolution = 4;
+let resolution = 8;
 let cols, rows;
 let gui;
 
 function setup() {
-  createCanvas(1200, 1200);
+  createCanvas(800, 800);
   background(0);
   cols = floor(width*2 / resolution);
   rows = floor(height*2 / resolution);
