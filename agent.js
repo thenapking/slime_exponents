@@ -7,7 +7,18 @@ class Agent {
     this.angle = random(TWO_PI);
     this.group = group;
   }
+
+  edges(){
+    if(this.pos.x > width || this.pos.x < 0){
+      this.angle = PI - this.angle;
+    }
+    if(this.pos.y > height || this.pos.y < 0){
+      this.angle = -this.angle;
+    }
+  }
+
   update() {
+    this.edges();
     let left = this.sense(this.group.sensorAngle);
     let center = this.sense(0);
     let right = this.sense(-this.group.sensorAngle);
@@ -34,12 +45,29 @@ class Agent {
     }
     return 0;
   }
+
   deposit() {
     let i = floor(this.pos.x / resolution);
     let j = floor(this.pos.y / resolution);
     if (i >= 0 && i < cols && j >= 0 && j < rows) {
       this.group.trailMap[i][j] = constrain(this.group.trailMap[i][j] + 10, 0, 255);
     }
+  }
+
+  draw(){
+    if(!this.in_thresholds()) { return }
+    stroke(palette.black);
+    strokeWeight(1);
+    fill(this.group.fillColor);
+    circle(this.pos.x, this.pos.y, 6);
+  }
+
+  in_thresholds(){
+    let i = floor(this.pos.x / resolution);
+    let j = floor(this.pos.y / resolution);
+    if(i < 0 || i >= cols || j < 0 || j >= rows) { return false }
+    let val = this.group.trailMap[i][j];
+    return val > this.group.maxThreshold;
   }
   
 }
@@ -60,7 +88,7 @@ function update_agents() {
 }
 
 function diffuseTrails() {
-  groups.forEach(group => {
+  for(let group of groups){
     let newMap = new Array(cols).fill().map(() => new Array(rows).fill(0));
     for (let i = 0; i < cols; i++) {
       for (let j = 0; j < rows; j++) {
@@ -81,5 +109,5 @@ function diffuseTrails() {
       }
     }
     group.trailMap = newMap;
-  });
+  };
 }

@@ -1,5 +1,5 @@
 function create_attractors() {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < NUM_ATTRACTORS; i++) {
     let x = random(width);
     let y = random(height);
     let radius = random(20, 50);

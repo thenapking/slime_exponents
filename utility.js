@@ -11,13 +11,13 @@ msWorker.onmessage = function(e) {
 
 interactionWorker.onmessage = function(e) {
   const { forces } = e.data;
-  agents.forEach(agent => {
+  for(let agent of agents){
     if (forces[agent.id]) {
       agent.pos.x += forces[agent.id].fx;
       agent.pos.y += forces[agent.id].fy;
       agent.checkEdges();
     }
-  });
+  }
 }
 
 function updateInteractions() {
@@ -42,11 +42,16 @@ function updateInteractions() {
 
 function resetSimulation() {
   agents = [];
-  groups.forEach(group => {
+  for(let group of groups){
     group.trailMap = new Array(cols).fill().map(() => new Array(rows).fill(0));
-  });
+  };
   create_agents();
 }
+
+let simControls = { 
+  reset: resetSimulation, 
+  show_agents: false
+};
 
 function create_gui(){
   gui = new dat.GUI();
@@ -61,13 +66,17 @@ function create_gui(){
     folder.add(group, 'minThreshold', 0, 255).name('Min Threshold');
     folder.add(group, 'maxThreshold', 0, 255).name('Max Threshold');
     folder.add(group, 'levels', 2, 10, 1).name('Levels');
+    folder.add(group, 'show').name('Show Agents');
+    folder.add(group, 'show_thresholds').name('Show Thresholds');
+    folder.add(group, 'depth', 0, 10, 1).name('Depth');
     let interactionsFolder = folder.addFolder("Interactions");
     for (let j = 0; j < N; j++) {
       interactionsFolder.add(group.interactions, j.toString(), -1, 1, 0.01).name(`With Group ${j}`);
     }
   });
-  let simControls = { reset: resetSimulation };
+  
   gui.add(simControls, "reset").name("Reset Simulation");
+  gui.add(simControls, "show_agents").name("Show Agents");
 }
 
 
@@ -95,7 +104,8 @@ function requestContours(group, threshold) {
 }
 
 function draw_thresholds() {
-  groups.forEach(group => {
+  for(let group of groups){
+    if(!group.show_thresholds) { continue }
     if (contourResults[group.id]) {
       for (let threshold in contourResults[group.id]) {
         if (Array.isArray(group.strokeColor)) {
@@ -109,6 +119,87 @@ function draw_thresholds() {
         }
       }
     }
-  });
+  }
 }
+
+function hatchThresholdBand(group, lower, upper, spacing) {
+  stroke(group.fillColor);
+  strokeWeight(1);
+  for (let j = 0; j < rows; j++) {
+    let drawing = false;
+    let segStart = 0;
+    for (let i = 0; i < cols; i++) {
+      let val = group.trailMap[i][j];
+      if (val >= lower && val < upper) {
+        if (!drawing) {
+          segStart = i;
+          drawing = true;
+        }
+      } else {
+        if (drawing) {
+          let x1 = segStart * resolution;
+          let x2 = i * resolution;
+          let y = j * resolution;
+          for (let sy = y; sy < y + resolution; sy += spacing) {
+            line(x1, sy, x2, sy);
+          }
+          drawing = false;
+        }
+      }
+    }
+    if (drawing) {
+      let x1 = segStart * resolution;
+      let x2 = cols * resolution;
+      let y = j * resolution;
+      for (let sy = y; sy < y + resolution; sy += spacing) {
+        line(x1, sy, x2, sy);
+      }
+    }
+  }
+}
+
+function draw_hatched_thresholds() {
+  for(let group of groups){
+    if(!group.show_thresholds) { continue }
+    let thresholds = [];
+    for (let i = 0; i < group.levels; i++) {
+      thresholds.push(group.minThreshold + i * (group.maxThreshold - group.minThreshold) / (group.levels - 1));
+    }
+    for (let i = 0; i < thresholds.length - 1; i++) {
+      hatchThresholdBand(group, thresholds[i], thresholds[i+1], 2);
+    }
+  };
+}
+
+function draw_depth_pixels() {
+  loadPixels();
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let cellColor = null;
+      for (let group of groups) {
+        if(!group.show_thresholds) { continue }
+        let val = group.trailMap[i][j];
+        if (val >= group.minThreshold && val <= group.maxThreshold) {
+          cellColor = color(group.strokeColor);
+          break;
+        }
+      }
+      if (cellColor !== null) {
+        for (let y = j * resolution; y < (j + 1) * resolution; y++) {
+          for (let x = i * resolution; x < (i + 1) * resolution; x++) {
+            let index = (y * width + x) * 4;
+            pixels[index] = red(cellColor);
+            pixels[index + 1] = green(cellColor);
+            pixels[index + 2] = blue(cellColor);
+            pixels[index + 3] = 255;
+          }
+        }
+      }
+    }
+  }
+  updatePixels();
+}
+
+
+
 
